@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "260157359450",
+    "project_id": "final-year-project-demo",
+    "storage_bucket": "final-year-project-demo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:260157359450:android:9b66f9c7f3eaecb8925f63",
+        "android_client_info": {
+          "package_name": "com.example.chatbot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "260157359450-48b4qntmdt1s82apjnapjp232s608l4f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chatbot",
+            "certificate_hash": "310006e2fbed198a9d3cfa39a81403036992af0d"
+          }
+        },
+        {
+          "client_id": "260157359450-pjrbee8v55nmp771m0ojuiq6i8ggokdm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9-KcwmI1sP7Rk4CAS_6eEP4ZbsfFHiFE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "260157359450-pjrbee8v55nmp771m0ojuiq6i8ggokdm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "260157359450-3e126ibbn5l414t09pgd11ek33rrejes.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatbot"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

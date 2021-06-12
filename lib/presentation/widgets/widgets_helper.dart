@@ -1,0 +1,3 @@
+class WidgetsHelper {
+  WidgetsHelper._();
+}
