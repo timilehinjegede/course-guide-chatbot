@@ -2,7 +2,7 @@
     package="com.example.chatbot">
    <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="chatbot"
+        android:label="Chatbot"
         android:icon="@mipmap/ic_launcher">
 
         <meta-data

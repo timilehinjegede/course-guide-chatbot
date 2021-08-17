@@ -1,3 +1,5 @@
+import 'package:chatbot/data/models/user_state.dart';
+import 'package:chatbot/data/services/storage/storage_service.dart';
 import 'package:chatbot/logic/cubits/cubits.dart';
 import 'package:chatbot/presentation/screens/home/home.dart';
 import 'package:chatbot/presentation/widgets/widgets.dart';
@@ -81,12 +83,23 @@ class _AuthButtonsSection extends StatelessWidget {
           Logger.info('authentication loaidng here');
         } else if (state is AuthSuccess) {
           Logger.info('authentication in success here');
+          // mutate user state
+          StorageService storageService = StorageService();
+          UserState userState = storageService.getUserState();
+          userState = userState.copyWith(isLoggedIn: true, hasOnboarded: true);
+          storageService.saveUserState(userState: userState);
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => Home()),
+            MaterialPageRoute(
+              builder: (_) => Home(),
+            ),
             (route) => false,
           );
         } else if (state is AuthFailed) {
+          WidgetsHelper.showErrorDialog(
+            context,
+            state.errorMessage,
+          );
           Logger.info('authentication failed here');
         }
       },
@@ -104,12 +117,12 @@ class _AuthButtonsSection extends StatelessWidget {
               imgSrc: Assets.ic_google,
               onPressed: () async => _authCubit.signInWithGoogle(),
             ),
-            YBox(15),
-            AuthButton(
-              title: Strings.signInWithApple,
-              imgSrc: '',
-              onPressed: () async => _authCubit.signInWithApple(),
-            ),
+            // YBox(15),
+            // AuthButton(
+            //   title: Strings.signInWithApple,
+            //   imgSrc: '',
+            //   onPressed: () async => _authCubit.signInWithApple(),
+            // ),
           ],
         );
       },

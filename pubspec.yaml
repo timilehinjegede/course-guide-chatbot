@@ -29,6 +29,13 @@ dependencies:
   path_provider: ^1.0.0
   flutter_svg: ^0.19.3
 
+  # stream audio data from mic
+  sound_stream: ^0.3.0
+  # dialog flow
+  dialogflow_grpc: ^0.2.2
+  # more stream features
+  rxdart: ^0.27.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -42,6 +49,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/jsons/
 
   fonts:
     - family: Roboto

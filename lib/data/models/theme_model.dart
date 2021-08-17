@@ -15,6 +15,8 @@ class ThemeModel {
   final Color kOrange;
   final Color kGreen;
   final Color kPink;
+  final Color success;
+  final Color fail;
 
   const ThemeModel({
     this.primary,
@@ -22,7 +24,7 @@ class ThemeModel {
     this.background,
     this.text,
     this.subText,
-    this.grey = const Color(0xFFF6F7F8),
+    this.grey = const Color(0xFFE0E0E0),
     this.white = const Color(0xFFFFFFFF),
     this.black = const Color(0xFF000000),
     this.transparent = Colors.transparent,
@@ -31,6 +33,8 @@ class ThemeModel {
     this.kOrange = const Color(0xFFEA7B4F),
     this.kGreen = const Color(0xFF5BD358),
     this.kPink = const Color(0xFFE95087),
+    this.fail = Colors.red,
+    this.success = Colors.green,
   });
   // others
 }
