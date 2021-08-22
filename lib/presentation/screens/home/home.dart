@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:chatbot/data/services/courses/courses_service.dart';
 import 'package:chatbot/presentation/screens/home/chat/chat_screen.dart';
 import 'package:chatbot/presentation/screens/home/explore/explore_screen.dart';
 import 'package:chatbot/presentation/screens/home/profile/profile_screen.dart';
@@ -100,7 +103,9 @@ class _HomeState extends State<Home> {
             ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (newIndex) {
+        onTap: (newIndex) async {
+          CoursesService co = CoursesService();
+          await co.getQualifiedCourses([]);
           setState(() {
             _currentIndex = newIndex;
           });

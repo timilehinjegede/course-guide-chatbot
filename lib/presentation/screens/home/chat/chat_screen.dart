@@ -1,10 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' as math;
 
+import 'package:chatbot/data/models/course.dart';
 import 'package:chatbot/data/models/models.dart';
+import 'package:chatbot/data/models/responses.dart';
+import 'package:chatbot/data/services/courses/courses_service.dart';
 import 'package:chatbot/data/services/storage/storage_service.dart';
 import 'package:chatbot/presentation/screens/home/chat/start_using_chatbot.dart';
+import 'package:chatbot/presentation/widgets/course_card.dart';
+import 'package:chatbot/presentation/widgets/filter_card.dart';
 import 'package:chatbot/presentation/widgets/widgets.dart';
 import 'package:chatbot/utils/utils.dart';
 import 'package:dialogflow_grpc/dialogflow_grpc.dart';
@@ -28,11 +34,13 @@ class _ChatScreenState extends State<ChatScreen> {
   TextEditingController _controller;
 
   bool _isRecording = false;
+  bool _showFilters = false;
 
   RecorderStream _recorder = RecorderStream();
   StreamSubscription _recorderStatus;
   StreamSubscription<List<int>> _audioStreamSubscription;
   BehaviorSubject<List<int>> _audioStream;
+  List<Course> _qualifiedCourses = [];
 
   // TODO DialogflowGrpc class instance
   DialogflowGrpcV2Beta1 dialogflow;
@@ -45,16 +53,16 @@ class _ChatScreenState extends State<ChatScreen> {
     _controller = TextEditingController();
     _chatMessages.addAll(
       [
-        SentChatMessage(message: "Hey"),
-        ReceivedChatMessage(message: "Hi"),
-        ReceivedChatMessage(message: "How are you?"),
-        SentChatMessage(message: "I am great how are you doing?"),
-        ReceivedChatMessage(message: "I am okay"),
-        SentChatMessage(message: "Can we meet tomorrow?"),
-        ReceivedChatMessage(message: "I will think about it"),
-        SentChatMessage(message: "Lmao. Okay o."),
-        ReceivedChatMessage(message: "I will think about it"),
-        SentChatMessage(message: "Lmao. Okay o."),
+        // SentChatMessage(message: "Hey"),
+        // ReceivedChatMessage(message: "Hi"),
+        // ReceivedChatMessage(message: "How are you?"),
+        // SentChatMessage(message: "I am great how are you doing?"),
+        // ReceivedChatMessage(message: "I am okay"),
+        // SentChatMessage(message: "Can we meet tomorrow?"),
+        // ReceivedChatMessage(message: "I will think about it"),
+        // SentChatMessage(message: "Lmao. Okay o."),
+        // ReceivedChatMessage(message: "I will think about it"),
+        // SentChatMessage(message: "Lmao. Okay o."),
       ],
     );
   }
@@ -74,7 +82,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _message.trim();
     DetectIntentResponse data =
         await dialogflow.detectIntent(_message, 'en-US');
-    // log('data is here $data');
+    // log('dialog flow response is here $data');
+    // print('dialog flow response ended');
     String fulfillmentText = data.queryResult.fulfillmentText;
     log('fulfiment text is here $fulfillmentText');
     if (fulfillmentText.isNotEmpty) {
@@ -88,6 +97,41 @@ class _ChatScreenState extends State<ChatScreen> {
           message: fulfillmentText,
         ),
       );
+
+      // here for the grades aftermath
+      if (AgentResponses.getQualifiedCoursesYesResponse
+          .any((response) => response == fulfillmentText)) {
+        _chatMessages.add(
+          ReceivedChatMessage(
+            message: 'Please choose your preferred faculty to study in.',
+          ),
+        );
+
+        setState(() {
+          _showFilters = true;
+        });
+        // log('the agent parameters are ${data.queryResult.parameters}');
+        // log('the agent parameters json map is ${data.queryResult.parameters.writeToJsonMap()}');
+        // log('the agent parameters json is ${data.queryResult.parameters.writeToJson()}');
+        // log('the agent parameters string is ${data.queryResult.parameters.toString()}');
+        // log('the agent parameters fields are ${data.queryResult.parameters.fields}');
+
+        Map resultFromGradesAndSubjects =
+            jsonDecode(data.queryResult.parameters.writeToJson());
+        List<FieldParameter> fieldParameters = [];
+
+        for (int i = 0; i < resultFromGradesAndSubjects['1'].length; i++) {
+          fieldParameters.add(
+              FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]));
+          // log('here subject ${FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]).key}');
+          // log('here grade ${FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]).value.result}');
+        }
+
+        _qualifiedCourses =
+            await CoursesService().getQualifiedCourses(fieldParameters);
+        log('qualified courses list is $_qualifiedCourses');
+        log('qualified courses length is ${_qualifiedCourses.length}');
+      }
     }
     _controller.clear();
 
@@ -186,6 +230,51 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool _enableSendButton() => _message.trim().isNotEmpty && _message != null;
 
+  void _filterResults(String label) {
+    _qualifiedCourses =
+        _qualifiedCourses.where((course) => course.faculty == label).toList();
+
+    log('qualified courses are ${_qualifiedCourses.length}');
+
+    setState(() {
+      _showFilters = false;
+    });
+
+    _chatMessages.add(
+      ReceivedChatMessage(
+        message:
+            'You choose the $label Faculty, Showing available courses in the faulty based on your subjects combinations and grades.',
+      ),
+    );
+    if (_qualifiedCourses.isEmpty)
+      _chatMessages.add(
+        ReceivedChatMessage(
+          message:
+              'There are no available courses you can study in the $label faculty based on your subject combinations and grades.',
+        ),
+      );
+
+    if (_qualifiedCourses.isNotEmpty)
+      _chatMessages.add(
+        SizedBox(
+          height: 130,
+          width: double.infinity,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: BouncingScrollPhysics(),
+            shrinkWrap: true,
+            children: [
+              ..._qualifiedCourses.map(
+                (course) => CourseCard(
+                  course: _qualifiedCourses[_qualifiedCourses.indexOf(course)],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     return !_userState.hasStartedConvoWithBot
@@ -209,6 +298,45 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
               ),
+              if (_showFilters)
+                SizedBox(
+                  height: 10,
+                ),
+              if (_showFilters)
+                SizedBox(
+                  height: 55,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: 15.0),
+                    physics: BouncingScrollPhysics(),
+                    children: [
+                      FilterCard(
+                        label: 'SCIENCES',
+                        onTap: () {
+                          _filterResults('Sciences');
+                        },
+                      ),
+                      SizedBox(width: 20),
+                      FilterCard(
+                        label: 'SOCIAL SCIENCES',
+                        onTap: () {
+                          _filterResults('Social Sciences');
+                        },
+                      ),
+                      SizedBox(width: 20),
+                      FilterCard(
+                        label: 'ARTS',
+                        onTap: () {
+                          _filterResults('Arts');
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              if (_showFilters)
+                SizedBox(
+                  height: 10,
+                ),
               Container(
                 height: 85,
                 width: double.infinity,
