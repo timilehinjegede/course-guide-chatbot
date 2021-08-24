@@ -1,7 +1,10 @@
+import 'package:chatbot/data/models/course.dart';
 import 'package:chatbot/data/models/models.dart';
 import 'package:chatbot/data/services/storage/storage_service.dart';
 import 'package:chatbot/presentation/screens/auth/auth_screen.dart';
 import 'package:chatbot/presentation/screens/institutions/explore_institutions_screen.dart';
+import 'package:chatbot/presentation/widgets/course_card.dart';
+import 'package:chatbot/presentation/widgets/filter_card.dart';
 import 'package:chatbot/presentation/widgets/widgets.dart';
 import 'package:chatbot/utils/colors.dart';
 import 'package:chatbot/utils/dims.dart';

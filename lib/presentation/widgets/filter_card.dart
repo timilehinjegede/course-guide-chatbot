@@ -16,11 +16,18 @@ class FilterCard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        height: 50,
+        height: 60,
         width: 120,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
           color: lightColors.primary,
+          boxShadow: [
+            BoxShadow(
+              offset: Offset(0, 10),
+              color: lightColors.primary.withOpacity(.3),
+              blurRadius: 20,
+            ),
+          ],
         ),
         padding: EdgeInsets.symmetric(horizontal: 10.0),
         child: Center(

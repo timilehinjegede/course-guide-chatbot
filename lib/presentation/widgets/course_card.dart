@@ -1,4 +1,5 @@
 import 'package:chatbot/data/models/course.dart';
+import 'package:chatbot/presentation/widgets/course_details_widget.dart';
 import 'package:chatbot/utils/colors.dart';
 import 'package:flutter/material.dart';
 
@@ -26,55 +27,18 @@ class CourseCard extends StatelessWidget {
           ),
           builder: (context) {
             return Container(
-              height: 500,
-              width: MediaQuery.of(context).size.width,
-              padding: EdgeInsets.fromLTRB(20, 30, 20, 15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Course Name',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    course.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 24,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    'Course Faculty',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    course.faculty,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 24,
-                    ),
-                  ),
-                   SizedBox(
-                    height: 10,
-                  ),
-                ],
+              height: MediaQuery.of(context).size.height * 0.8,
+              padding: EdgeInsets.only(top: 20.0),
+              child: CourseDetailsWidget(
+                course: course,
               ),
             );
           },
         );
       },
       child: Container(
-        height: 130,
-        width: 270,
+        height: 110,
+        width: 320,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
           boxShadow: [
@@ -87,70 +51,74 @@ class CourseCard extends StatelessWidget {
           ],
           color: Colors.white,
         ),
-        padding: EdgeInsets.all(20.0),
-        child: Column(
+        padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
+        child: Row(
           children: [
-            Row(
-              children: [
-                Text(
-                  'Course: ',
+            Container(
+              height: 70,
+              width: 70,
+              decoration: BoxDecoration(
+                color: lightColors.primary.withOpacity(.5),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Center(
+                child: Text(
+                  course.name.split(' ').first[0] +
+                      course.name.split(' ').last[0],
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w400,
+                    fontSize: 35,
+                    fontWeight: FontWeight.w600,
+                    color: lightColors.text,
                   ),
                 ),
-                Expanded(
-                  child: Text(
+              ),
+            ),
+            SizedBox(
+              width: 15,
+            ),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
                     course.name,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       color: Colors.black,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 3,
-            ),
-            Row(
-              children: [
-                Text(
-                  'Faculty: ',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w400,
+                  SizedBox(
+                    height: 5,
                   ),
-                ),
-                Expanded(
-                  child: Text(
-                    course.faculty,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Faculty: ',
+                        style: TextStyle(
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        course.faculty,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 3,
-            ),
-            Row(
-              children: [
-                Text(
-                  'Universities offering ${course.name}',
-                ),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 25,
-                  color: lightColors.grey,
-                ),
-              ],
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Text(
+                    '5 universities offers this course',
+                  ),
+                ],
+              ),
             ),
           ],
         ),

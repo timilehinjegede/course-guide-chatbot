@@ -349,7 +349,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool _enableSendButton() => _message.trim().isNotEmpty && _message != null;
 
-  void _filterResults(String label) {
+  void _filterResults(String label) async {
+    _chatMessages.add(
+      SentChatMessage(
+        message: label,
+      ),
+    );
+    await _addMessageToFirebase(label);
     _qualifiedCourses =
         _qualifiedCourses.where((course) => course.faculty == label).toList();
 
@@ -358,40 +364,51 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _showFilters = false;
     });
+    String firstMessage =
+        'You choose the $label Faculty, Showing available courses in the faulty based on your subjects combinations and grades.';
 
     _chatMessages.add(
       ReceivedChatMessage(
-        message:
-            'You choose the $label Faculty, Showing available courses in the faulty based on your subjects combinations and grades.',
+        message: firstMessage,
       ),
     );
-    if (_qualifiedCourses.isEmpty)
+    await _addMessageToFirebase(firstMessage, false);
+    if (_qualifiedCourses.isEmpty) {
+      String secondMessage =
+          'There are no available courses you can study in the $label faculty based on your subject combinations and grades.';
       _chatMessages.add(
         ReceivedChatMessage(
-          message:
-              'There are no available courses you can study in the $label faculty based on your subject combinations and grades.',
+          message: secondMessage,
         ),
       );
+      await _addMessageToFirebase(secondMessage, false);
+    }
 
-    if (_qualifiedCourses.isNotEmpty)
+    if (_qualifiedCourses.isNotEmpty) {
       _chatMessages.add(
         SizedBox(
           height: 130,
           width: double.infinity,
           child: ListView(
             scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
             physics: BouncingScrollPhysics(),
             shrinkWrap: true,
             children: [
               ..._qualifiedCourses.map(
-                (course) => CourseCard(
-                  course: _qualifiedCourses[_qualifiedCourses.indexOf(course)],
+                (course) => Padding(
+                  padding: const EdgeInsets.only(right: 10.0),
+                  child: CourseCard(
+                    course:
+                        _qualifiedCourses[_qualifiedCourses.indexOf(course)],
+                  ),
                 ),
               ),
             ],
           ),
         ),
       );
+    }
   }
 
   @override
@@ -463,12 +480,15 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   ),
                   if (_showFilters)
-                    SizedBox(
-                      height: 10,
+                    Container(
+                      height: 20,
+                      color: lightColors.background,
                     ),
                   if (_showFilters)
-                    SizedBox(
-                      height: 55,
+                    Container(
+                      height: 60,
+                      color: lightColors.background,
+                      width: double.infinity,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.symmetric(horizontal: 15.0),
@@ -498,8 +518,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                   if (_showFilters)
-                    SizedBox(
+                    Container(
                       height: 10,
+                      color: lightColors.background,
                     ),
                   Container(
                     height: 85,
