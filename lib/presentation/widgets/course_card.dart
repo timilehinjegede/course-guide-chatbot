@@ -115,7 +115,7 @@ class CourseCard extends StatelessWidget {
                     height: 5,
                   ),
                   Text(
-                    '5 universities offers this course',
+                    '${course.universities.private.length + course.universities.federal.length + course.universities.state.length} universities offers this course',
                   ),
                 ],
               ),

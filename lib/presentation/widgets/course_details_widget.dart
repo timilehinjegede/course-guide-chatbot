@@ -76,6 +76,36 @@ class CourseDetailsWidget extends StatelessWidget {
             SizedBox(
               height: 20,
             ),
+            Text(
+              'Course Requirements:',
+              style: TextStyle(
+                fontSize: 18,
+                color: lightColors.text,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            _UniversitiesEntry(
+              label: 'O\'level Requirements',
+              universities: [
+                ...course.olevelRequirements.map(
+                  (req) =>
+                      req.subjectName +
+                      ' is ' +
+                      '${req.isRequired ? 'required' : 'not required'}',
+                ),
+              ],
+            ),
+            _UniversitiesEntry(
+              label: 'UTME Requirements',
+              universities: [
+                ...course.utmeRequirements.map(
+                  (req) =>
+                      req.subjectName +
+                      ' is ' +
+                      '${req.isRequired ? 'required' : 'not required'}',
+                ),
+              ],
+            ),
           ],
         ),
       ),
