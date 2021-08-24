@@ -4,6 +4,7 @@ import 'package:chatbot/presentation/screens/auth/auth_screen.dart';
 import 'package:chatbot/presentation/widgets/widgets.dart';
 import 'package:chatbot/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class GetStartedScreen extends StatefulWidget {
   @override
@@ -45,7 +46,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                   itemBuilder: (_, int index) => _GetStartedWidget(
                     title: Strings.getStartedTitles[index],
                     description: Strings.getStartedDescriptions[index],
-                    imgSrc: '',
+                    imgSrc: Strings.getOnboardingImages[index],
                   ),
                   onPageChanged: (int newPage) {
                     setState(() {
@@ -59,36 +60,49 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                 length: _totalLength,
                 currentPosition: _currentPosition,
               ),
-              YBox(20),
+              YBox(30),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: AppButton(
-                  title: _currentPosition < _totalLength - 1
-                      ? Strings.next
-                      : Strings.getStartedNow,
-                  onPressed: () {
-                    const kDuration = Duration(milliseconds: 500);
+                child: Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        offset: Offset(0, 10),
+                        color: lightColors.primary.withOpacity(.3),
+                        blurRadius: 20,
+                      ),
+                    ],
+                  ),
+                  child: AppButton(
+                    title: _currentPosition < _totalLength - 1
+                        ? Strings.next
+                        : Strings.getStartedNow,
+                    textColor: lightColors.white,
+                    onPressed: () {
+                      const kDuration = Duration(milliseconds: 500);
 
-                    _pageController.nextPage(
-                      duration: kDuration,
-                      curve: Curves.easeInOut,
-                    );
+                      _pageController.nextPage(
+                        duration: kDuration,
+                        curve: Curves.easeInOut,
+                      );
 
-                    if (_currentPosition == _totalLength - 1) {
-                      StorageService().saveUserState(
-                        userState: UserState(
-                          hasOnboarded: true,
-                        ),
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AuthScreen(),
-                        ),
-                      );
-                    }
-                  },
-                  radius: 30.0,
+                      if (_currentPosition == _totalLength - 1) {
+                        StorageService().saveUserState(
+                          userState: UserState(
+                            hasOnboarded: true,
+                          ),
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AuthScreen(),
+                          ),
+                        );
+                      }
+                    },
+                    radius: 30.0,
+                  ),
                 ),
               ),
             ],
@@ -118,19 +132,29 @@ class _GetStartedWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: context.deviceWidth(),
-            height: context.deviceHeight(0.4),
-            child: Placeholder(),
+          Container(
+            height: 350,
+            child: SvgPicture.asset(
+              imgSrc,
+            ),
           ),
           YBox(50),
           Text(
             title,
+            style: TextStyle(
+              fontSize: 25,
+              color: lightColors.text,
+              fontWeight: FontWeight.w700,
+            ),
             textAlign: TextAlign.center,
           ),
-          YBox(8),
+          YBox(10),
           Text(
             description,
+            style: TextStyle(
+              fontSize: 16,
+              color: lightColors.subText,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -166,12 +190,15 @@ class _DotsIndicator extends StatelessWidget {
   }
 
   Widget _dotIndicator(bool isCurrentPosition) {
-    return Container(
+    return AnimatedContainer(
       height: 10,
-      width: 10,
+      duration: Duration(milliseconds: 300),
+      width: isCurrentPosition ? 28 : 10,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isCurrentPosition ? lightColors.primary : lightColors.black,
+        borderRadius: BorderRadius.circular(10.0),
+        color: isCurrentPosition
+            ? lightColors.primary
+            : lightColors.black.withOpacity(.2),
       ),
     );
   }

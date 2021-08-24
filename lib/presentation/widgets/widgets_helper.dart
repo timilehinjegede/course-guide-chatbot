@@ -6,6 +6,23 @@ import 'package:flutter/material.dart';
 class WidgetsHelper {
   WidgetsHelper._();
 
+  // loading dialog
+  static void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: SizedBox(
+            height: 150,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   // duplication
   static void showErrorDialog(BuildContext context, String title) {
     showDialog(

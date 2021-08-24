@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' as math;
 
+import 'package:chatbot/data/models/chat_model.dart';
 import 'package:chatbot/data/models/course.dart';
 import 'package:chatbot/data/models/models.dart';
 import 'package:chatbot/data/models/responses.dart';
@@ -10,14 +11,17 @@ import 'package:chatbot/data/services/courses/courses_service.dart';
 import 'package:chatbot/data/services/storage/storage_service.dart';
 import 'package:chatbot/presentation/screens/home/chat/start_using_chatbot.dart';
 import 'package:chatbot/presentation/widgets/course_card.dart';
+import 'package:chatbot/presentation/widgets/fancy_loader.dart';
 import 'package:chatbot/presentation/widgets/filter_card.dart';
 import 'package:chatbot/presentation/widgets/widgets.dart';
 import 'package:chatbot/utils/utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialogflow_grpc/dialogflow_grpc.dart';
 import 'package:dialogflow_grpc/generated/google/cloud/dialogflow/v2beta1/session.pbgrpc.dart';
 import 'package:dialogflow_grpc/v2beta1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sound_stream/sound_stream.dart';
 
@@ -28,6 +32,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   UserState _userState = StorageService().getUserState();
+  User user = StorageService().getUser();
 
   List<Widget> _chatMessages = [];
   String _message = '';
@@ -35,36 +40,95 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool _isRecording = false;
   bool _showFilters = false;
+  bool _hasStartedConvoWithBot;
 
   RecorderStream _recorder = RecorderStream();
   StreamSubscription _recorderStatus;
   StreamSubscription<List<int>> _audioStreamSubscription;
   BehaviorSubject<List<int>> _audioStream;
   List<Course> _qualifiedCourses = [];
+  List<ChatModel> _chatsFromFirebase = [];
 
   // TODO DialogflowGrpc class instance
   DialogflowGrpcV2Beta1 dialogflow;
 
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
+
+    // get user messages from here
+    _getUserMessages();
+
     initPlugin();
 
     _controller = TextEditingController();
-    _chatMessages.addAll(
-      [
-        // SentChatMessage(message: "Hey"),
-        // ReceivedChatMessage(message: "Hi"),
-        // ReceivedChatMessage(message: "How are you?"),
-        // SentChatMessage(message: "I am great how are you doing?"),
-        // ReceivedChatMessage(message: "I am okay"),
-        // SentChatMessage(message: "Can we meet tomorrow?"),
-        // ReceivedChatMessage(message: "I will think about it"),
-        // SentChatMessage(message: "Lmao. Okay o."),
-        // ReceivedChatMessage(message: "I will think about it"),
-        // SentChatMessage(message: "Lmao. Okay o."),
-      ],
+    // _chatMessages.addAll(
+    //   [
+    //     // SentChatMessage(message: "Hey"),
+    //     // ReceivedChatMessage(message: "Hi"),
+    //     // ReceivedChatMessage(message: "How are you?"),
+    //     // SentChatMessage(message: "I am great how are you doing?"),
+    //     // ReceivedChatMessage(message: "I am okay"),
+    //     // SentChatMessage(message: "Can we meet tomorrow?"),
+    //     // ReceivedChatMessage(message: "I will think about it"),
+    //     // SentChatMessage(message: "Lmao. Okay o."),
+    //     // ReceivedChatMessage(message: "I will think about it"),
+    //     // SentChatMessage(message: "Lmao. Okay o."),
+    //   ],
+    // );
+  }
+
+  Future<void> _getUserMessages() async {
+    FancyLoader fancyLoader = FancyLoader(
+      child: SvgPicture.asset(
+        'assets/images/chatbot.svg',
+        color: lightColors.white,
+        height: 75,
+        width: 75,
+      ),
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fancyLoader.show(context);
+    });
+
+    User user = StorageService().getUser();
+
+    FirebaseFirestore ff = FirebaseFirestore.instance;
+    DocumentSnapshot documentSnapshot =
+        await ff.collection('messages').doc(user.id).get();
+
+    if (documentSnapshot.exists) {
+      Map data = documentSnapshot.data();
+
+      for (int i = 0; i < data.length; i++) {
+        for (Map chatModelJson in data.values.elementAt(i)) {
+          ChatModel chatModel = ChatModel(
+            isUser: chatModelJson['is_user'],
+            message: chatModelJson['message'],
+            timestamp: chatModelJson['timestamp'],
+          );
+
+          _chatMessages.add(
+            chatModel.isUser
+                ? SentChatMessage(message: chatModel.message)
+                : ReceivedChatMessage(
+                    message: chatModel.message,
+                  ),
+          );
+        }
+        // log('data is ${data[i].value}');
+      }
+      _hasStartedConvoWithBot = true;
+    } else {
+      _hasStartedConvoWithBot = false;
+    }
+
+    setState(() {});
+
+    Navigator.pop(context);
   }
 
   void _handleSubmitted(String text) async {
@@ -78,8 +142,56 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _addMessageToFirebase(String message, [bool isUser = true]) async {
+    FirebaseFirestore ff = FirebaseFirestore.instance;
+
+    DocumentSnapshot ds = await ff.collection('messages').doc(user.id).get();
+    String formattedDate =
+        UtilsHelper.formatDateShort(DateTime.now().toString());
+    String timeStamp = Timestamp.fromDate(DateTime.now()).toString();
+
+    if (ds.data() == null) {
+      await ff.collection('messages').doc(user.id).set(
+        {
+          formattedDate: [
+            ChatModel(
+              isUser: isUser,
+              message: message,
+              timestamp: timeStamp,
+            ).toJson(),
+          ],
+        },
+      );
+    } else {
+      List chatModels = ds.data()[formattedDate];
+      chatModels.add(
+        ChatModel(
+          isUser: isUser,
+          message: message,
+          timestamp: timeStamp,
+        ).toJson(),
+      );
+      await ff.collection('messages').doc(user.id).update(
+        {
+          formattedDate: [
+            ...chatModels,
+          ],
+        },
+      );
+    }
+  }
+
   void _sendMessage() async {
     _message.trim();
+    _chatMessages.add(
+      SentChatMessage(
+        message: _message,
+      ),
+    );
+    _controller.clear();
+    setState(() {});
+
+    _addMessageToFirebase(_message);
     DetectIntentResponse data =
         await dialogflow.detectIntent(_message, 'en-US');
     // log('dialog flow response is here $data');
@@ -87,16 +199,24 @@ class _ChatScreenState extends State<ChatScreen> {
     String fulfillmentText = data.queryResult.fulfillmentText;
     log('fulfiment text is here $fulfillmentText');
     if (fulfillmentText.isNotEmpty) {
-      _chatMessages.add(
-        SentChatMessage(
-          message: _message,
-        ),
-      );
-      _chatMessages.add(
-        ReceivedChatMessage(
-          message: fulfillmentText,
-        ),
-      );
+      if (fulfillmentText.contains('br')) {
+        List<String> _messages = fulfillmentText.split('br');
+        for (var m in _messages) {
+          await _addMessageToFirebase(m.trim(), false);
+          _chatMessages.add(
+            ReceivedChatMessage(
+              message: m.trim(),
+            ),
+          );
+        }
+      } else {
+        _addMessageToFirebase(fulfillmentText, false);
+        _chatMessages.add(
+          ReceivedChatMessage(
+            message: fulfillmentText,
+          ),
+        );
+      }
 
       // here for the grades aftermath
       if (AgentResponses.getQualifiedCoursesYesResponse
@@ -133,7 +253,6 @@ class _ChatScreenState extends State<ChatScreen> {
         log('qualified courses length is ${_qualifiedCourses.length}');
       }
     }
-    _controller.clear();
 
     _message = '';
     setState(() {});
@@ -277,143 +396,188 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return !_userState.hasStartedConvoWithBot
-        ? StartUsingChatbot(
-            onStartUsingTapped: () {
-              StorageService storageService = StorageService();
-              _userState.copyWith(hasStartedConvoWithBot: true);
-              storageService.saveUserState(userState: _userState);
-            },
-          )
-        : Column(
-            children: [
-              Expanded(
-                child: Container(
-                  color: lightColors.lightBackground,
-                  child: ListView(
-                    reverse: true,
-                    children: [
-                      ..._chatMessages.reversed,
-                    ],
-                  ),
-                ),
-              ),
-              if (_showFilters)
-                SizedBox(
-                  height: 10,
-                ),
-              if (_showFilters)
-                SizedBox(
-                  height: 55,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: 15.0),
-                    physics: BouncingScrollPhysics(),
-                    children: [
-                      FilterCard(
-                        label: 'SCIENCES',
-                        onTap: () {
-                          _filterResults('Sciences');
-                        },
-                      ),
-                      SizedBox(width: 20),
-                      FilterCard(
-                        label: 'SOCIAL SCIENCES',
-                        onTap: () {
-                          _filterResults('Social Sciences');
-                        },
-                      ),
-                      SizedBox(width: 20),
-                      FilterCard(
-                        label: 'ARTS',
-                        onTap: () {
-                          _filterResults('Arts');
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              if (_showFilters)
-                SizedBox(
-                  height: 10,
-                ),
-              Container(
-                height: 85,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: lightColors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      offset: Offset(0, -10),
-                      color: lightColors.primary.withOpacity(.05),
-                      blurRadius: 26,
-                      spreadRadius: 7,
+    return _hasStartedConvoWithBot == null
+        ? SizedBox.shrink()
+        : !_hasStartedConvoWithBot
+            ? StartUsingChatbot(
+                onStartUsingTapped: () {
+                  StorageService storageService = StorageService();
+                  setState(() {
+                    _hasStartedConvoWithBot = true;
+                  });
+                  _userState.copyWith(hasStartedConvoWithBot: true);
+                  storageService.saveUserState(userState: _userState);
+                },
+              )
+            : Column(
+                children: [
+                  Container(
+                    height: 70,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(),
                     ),
-                  ],
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 10.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 48,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.0),
-                          color: lightColors.subText.withOpacity(.2),
+                    padding: EdgeInsets.symmetric(horizontal: 15.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/chatbot_3.svg',
+                          height: 55,
+                          width: 55,
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 10.0),
-                        child: TextField(
-                          controller: _controller,
-                          textInputAction: TextInputAction.done,
-                          keyboardType: TextInputType.text,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Type a message...',
-                            suffixIcon: InkWell(
-                              onTap: _enableSendButton()
-                                  ? () {
-                                      _sendMessage();
-                                    }
-                                  : null,
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          'Apollo'.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 16,
+                            letterSpacing: 2,
+                            fontWeight: FontWeight.bold,
+                            foreground: Paint()
+                              ..style = PaintingStyle.stroke
+                              ..strokeWidth = 2
+                              ..color = lightColors.white
+                              ..strokeCap = StrokeCap.round,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: lightColors.lightBackground,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20.0),
+                          topRight: Radius.circular(20.0),
+                        ),
+                      ),
+                      child: ListView(
+                        reverse: true,
+                        physics: BouncingScrollPhysics(),
+                        children: [
+                          ..._chatMessages.reversed,
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_showFilters)
+                    SizedBox(
+                      height: 10,
+                    ),
+                  if (_showFilters)
+                    SizedBox(
+                      height: 55,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.symmetric(horizontal: 15.0),
+                        physics: BouncingScrollPhysics(),
+                        children: [
+                          FilterCard(
+                            label: 'SCIENCES',
+                            onTap: () {
+                              _filterResults('Sciences');
+                            },
+                          ),
+                          SizedBox(width: 20),
+                          FilterCard(
+                            label: 'SOCIAL SCIENCES',
+                            onTap: () {
+                              _filterResults('Social Sciences');
+                            },
+                          ),
+                          SizedBox(width: 20),
+                          FilterCard(
+                            label: 'ARTS',
+                            onTap: () {
+                              _filterResults('Arts');
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (_showFilters)
+                    SizedBox(
+                      height: 10,
+                    ),
+                  Container(
+                    height: 85,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: lightColors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          offset: Offset(0, -10),
+                          color: lightColors.primary.withOpacity(.05),
+                          blurRadius: 26,
+                          spreadRadius: 7,
+                        ),
+                      ],
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 48,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8.0),
+                              color: lightColors.subText.withOpacity(.2),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 10.0),
+                            child: TextField(
+                              controller: _controller,
+                              textInputAction: TextInputAction.done,
+                              keyboardType: TextInputType.text,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: 'Type a message...',
+                                suffixIcon: InkWell(
+                                  onTap: _enableSendButton()
+                                      ? () {
+                                          _sendMessage();
+                                        }
+                                      : null,
+                                  child: Icon(
+                                    Icons.send_rounded,
+                                    color: lightColors.text,
+                                  ),
+                                ),
+                              ),
+                              onSubmitted: _handleSubmitted,
+                              onChanged: (val) {
+                                setState(() {
+                                  _message = val;
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                        XBox(10),
+                        InkWell(
+                          onTap: _isRecording ? stopStream : handleStream,
+                          child: Container(
+                            height: 48,
+                            width: 48,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                              color: lightColors.primary,
+                            ),
+                            child: Center(
                               child: Icon(
-                                Icons.send_rounded,
-                                color: lightColors.text,
+                                _isRecording
+                                    ? Icons.mic_off_rounded
+                                    : Icons.mic_rounded,
+                                color: lightColors.white,
                               ),
                             ),
                           ),
-                          onSubmitted: _handleSubmitted,
-                          onChanged: (val) {
-                            setState(() {
-                              _message = val;
-                            });
-                          },
                         ),
-                      ),
+                      ],
                     ),
-                    XBox(10),
-                    InkWell(
-                      onTap: _isRecording ? stopStream : handleStream,
-                      child: Container(
-                        height: 48,
-                        width: 48,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
-                          color: lightColors.primary,
-                        ),
-                        child: Center(
-                          child: Icon(
-                            _isRecording
-                                ? Icons.mic_off_rounded
-                                : Icons.mic_rounded,
-                            color: lightColors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
+                  ),
+                ],
+              );
   }
 }

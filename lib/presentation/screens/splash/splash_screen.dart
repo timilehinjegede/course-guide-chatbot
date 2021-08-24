@@ -7,6 +7,7 @@ import 'package:chatbot/presentation/screens/get_started/get_started_screen.dart
 import 'package:chatbot/presentation/screens/home/home.dart';
 import 'package:chatbot/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -29,16 +30,51 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
-              height: 70,
-              width: 70,
-              child: Placeholder(),
-            ),
-            YBox(10),
-            Text(
-              'Chatbot Name',
-              style: TextStyle(
-                color: lightColors.text,
+            Container(
+              height: 200,
+              width: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  width: 10,
+                  color: lightColors.white.withOpacity(.4),
+                ),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    width: 5,
+                    color: lightColors.white,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/images/chatbot.svg',
+                      color: lightColors.white,
+                      height: 65,
+                      width: 65,
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      'Apollo'.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 30,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.bold,
+                        foreground: Paint()
+                          ..style = PaintingStyle.stroke
+                          ..strokeWidth = 2
+                          ..color = lightColors.white
+                          ..strokeCap = StrokeCap.round,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -48,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _loadSplash() {
-    const kDuration = Duration(seconds: 2);
+    const kDuration = Duration(seconds: 4);
     StorageService storageService = StorageService();
     bool isLoggedIn = storageService.getUserState().isLoggedIn ?? false;
     bool hasOnboarded = storageService.getUserState().hasOnboarded ?? false;

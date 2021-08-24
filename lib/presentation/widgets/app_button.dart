@@ -1,6 +1,7 @@
 import 'package:chatbot/utils/colors.dart';
 import 'package:chatbot/utils/dims.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class AppButton extends StatelessWidget {
   const AppButton({
@@ -35,6 +36,10 @@ class AppButton extends StatelessWidget {
       ),
       child: Text(
         title,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -76,13 +81,20 @@ class AuthButton extends StatelessWidget {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            height: 30,
-            width: 30,
+            height: 40,
+            width: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: lightColors.grey,
+              color: lightColors.white,
+              image: DecorationImage(
+                image: AssetImage(
+                  imgSrc,
+                ),
+                fit: BoxFit.contain,
+              ),
             ),
           ),
           XBox(10),

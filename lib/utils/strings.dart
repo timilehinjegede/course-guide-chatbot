@@ -6,25 +6,34 @@ class Strings {
   static const String fontFamily = 'Roboto';
   static const String getStartedNow = 'Get Started Now';
   static const String next = 'Next';
+  // 'Hello! 👋🏾, I\'m "Chatbot", your personal course guide assistant.',
+
   static const List<String> getStartedTitles = [
-    'Hello! 👋🏾, I\'m "Chatbot", your personal course guide assistant.',
-    'Hello! 👋🏾, I\'m "Chatbot", your own very own course guide bot.',
-    'Hello! 👋🏾, I\'m "Chatbot", your own very own course guide bot.',
+    'Get Qualified Courses.',
+    'Check previous conversation.',
+    'Access Anywhere, Anytime.',
   ];
   static const List<String> getStartedDescriptions = [
-    '"Chatbot" will help you to manage yout personal goals and discover your personality.',
-    'Are you currently searching for courses? You can ask me anything about it and I\'ll get it for you.',
-    '"Chatbot" will help you to manage yout personal goals and discover your personality.',
+    'Have access to list of courses you can study based on the Olevel and UTME subjects you offered.',
+    'Your previous conversations and queries are always available to access, view and verify.',
+    'Query and make Inquries about the courses you can study in Nigerian institutions.',
+  ];
+
+  static const List<String> getOnboardingImages = [
+    'assets/images/chatbot_4.svg',
+    'assets/images/chatbot_5.svg',
+    'assets/images/chatbot_1.svg',
   ];
 
   static const String signInWithGoogle = 'Sign in with Google';
-  static const String signInWithFacebook = 'Sign in with Facebook';
+  static const String signInWithFacebook = 'Log in with Facebook';
   static const String signInWithApple = 'Sign in with Apple';
 
   static const String defaultErrorMessage = 'Ooops! Something went wrong 😔.';
 
   // firebase keys
-  static const String usersCollection = kDebugMode ? 'users_dev' : 'users_production';
+  static const String usersCollection =
+      kDebugMode ? 'users_dev' : 'users_production';
 
   // hive keys
   static const String userBox = 'user';

@@ -6,6 +6,7 @@ import 'package:chatbot/presentation/widgets/widgets.dart';
 import 'package:chatbot/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 
 class AuthScreen extends StatelessWidget {
   @override
@@ -18,23 +19,17 @@ class AuthScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: Container(
-                  height: 60,
-                  width: 60,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: lightColors.kOrange,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '🤖',
-                      style: TextStyle(
-                        fontSize: 40,
-                      ),
-                    ),
-                  ),
+              Text(
+                'Apollo'.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 30,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.bold,
+                  foreground: Paint()
+                    ..style = PaintingStyle.stroke
+                    ..strokeWidth = 2.5
+                    ..color = lightColors.primary
+                    ..strokeCap = StrokeCap.round,
                 ),
               ),
               _AuthBasicInfoSection(),
@@ -52,21 +47,40 @@ class _AuthBasicInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          height: 100,
-          width: 100,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: lightColors.kGreen.withOpacity(.5),
+        SvgPicture.asset(
+          'assets/images/chatbot_3.svg',
+          height: 200,
+        ),
+        YBox(10),
+        Text(
+          'Hi Human! 👋🏾',
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.w600,
+            color: lightColors.text,
           ),
         ),
         YBox(10),
-        Text(
-          'Hey Human! 👋🏾',
-        ),
-        YBox(10),
-        Text(
-          'Sign in to your account to start using chatbot name',
+        Text.rich(
+          TextSpan(
+            text: 'Sign in to your account to start using ',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: lightColors.subText,
+              height: 1.3,
+            ),
+            children: [
+              TextSpan(
+                text: 'APOLLO',
+                style: TextStyle(
+                  color: lightColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -107,15 +121,17 @@ class _AuthButtonsSection extends StatelessWidget {
         return Column(
           children: [
             AuthButton(
-              title: Strings.signInWithFacebook,
-              imgSrc: Assets.ic_facebook,
-              onPressed: () async => _authCubit.signInWithFacebook(),
+              title: Strings.signInWithFacebook.toUpperCase(),
+              imgSrc: 'assets/images/facebook.png',
+              onPressed: () async => _authCubit.signInWithFacebook(context),
+              textColor: lightColors.white,
             ),
             YBox(15),
             AuthButton(
-              title: Strings.signInWithGoogle,
-              imgSrc: Assets.ic_google,
-              onPressed: () async => _authCubit.signInWithGoogle(),
+              title: Strings.signInWithGoogle.toUpperCase(),
+              imgSrc: 'assets/images/google.png',
+              onPressed: () async => _authCubit.signInWithGoogle(context),
+              textColor: lightColors.white,
             ),
             // YBox(15),
             // AuthButton(

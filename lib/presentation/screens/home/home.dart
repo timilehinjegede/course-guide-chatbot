@@ -5,10 +5,13 @@ import 'package:chatbot/presentation/screens/home/chat/chat_screen.dart';
 import 'package:chatbot/presentation/screens/home/explore/explore_screen.dart';
 import 'package:chatbot/presentation/screens/home/profile/profile_screen.dart';
 import 'package:chatbot/presentation/screens/home/settings/settings_screen.dart';
+import 'package:chatbot/presentation/widgets/key_alive_widget.dart';
 import 'package:chatbot/presentation/widgets/widgets.dart';
 import 'package:chatbot/utils/colors.dart';
 import 'package:chatbot/utils/dims.dart';
+import 'package:chatbot/utils/utils_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -22,7 +25,9 @@ class _HomeState extends State<Home> {
   final List<Widget> _bodyWidgets = [
     // ExploreScreen(),
     ProfileScreen(),
-    ChatScreen(),
+    KeepAliveWidget(
+      child: ChatScreen(),
+    ),
     SettingsScreen(),
   ];
 
@@ -41,71 +46,10 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _currentIndex == 0 || _currentIndex == 2
-          ? AppBar(
-              title: Text(
-                _currentIndex == 0 ? 'Profile' : 'Settings',
-              ),
-              leading: InkWell(
-                customBorder: CircleBorder(),
-                onTap: () {
-                  setState(() {
-                    _currentIndex = 1;
-                  });
-                  _pageController.jumpToPage(_currentIndex);
-                },
-                child: Icon(
-                  Icons.arrow_back_ios_rounded,
-                ),
-              ),
-              centerTitle: false,
-            )
-          : AppBar(
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Chatbot Name',
-                  ),
-                  YBox(3),
-                  Row(
-                    children: [
-                      Container(
-                        height: 7,
-                        width: 7,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: lightColors.success,
-                        ),
-                      ),
-                      XBox(5),
-                      Text(
-                        'Online',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: lightColors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              centerTitle: false,
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 15.0),
-                  child: CircleAvatar(
-                    radius: 20.0,
-                    backgroundColor: lightColors.white,
-                  ),
-                ),
-              ],
-            ),
+      backgroundColor: lightColors.primary,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (newIndex) async {
-          CoursesService co = CoursesService();
-          await co.getQualifiedCourses([]);
           setState(() {
             _currentIndex = newIndex;
           });
@@ -113,31 +57,45 @@ class _HomeState extends State<Home> {
         },
         items: [
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.person_rounded,
+            icon: SvgPicture.asset(
+              'assets/images/profile.svg',
+              height: 30,
+              width: 30,
+              color:
+                  _currentIndex == 0 ? lightColors.primary : lightColors.text,
             ),
             label: 'Profile',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.message_rounded,
+            icon: SvgPicture.asset(
+              'assets/images/chat.svg',
+              height: 30,
+              width: 30,
+              color:
+                  _currentIndex == 1 ? lightColors.primary : lightColors.text,
             ),
             label: 'Chat',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.settings_rounded,
+            icon: SvgPicture.asset(
+              'assets/images/settings.svg',
+              height: 30,
+              width: 30,
+              color:
+                  _currentIndex == 2 ? lightColors.primary : lightColors.text,
             ),
             label: 'Settings',
           ),
         ],
       ),
-      body: PageView(
-        controller: _pageController,
-        physics: NeverScrollableScrollPhysics(),
-        children: [
-          ..._bodyWidgets,
-        ],
+      body: SafeArea(
+        child: PageView(
+          controller: _pageController,
+          physics: NeverScrollableScrollPhysics(),
+          children: [
+            ..._bodyWidgets,
+          ],
+        ),
       ),
     );
   }

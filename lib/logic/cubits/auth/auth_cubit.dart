@@ -1,12 +1,16 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:chatbot/data/models/models.dart' as models;
 import 'package:chatbot/data/repositories/auth_repository.dart';
 import 'package:chatbot/data/services/services_helper.dart';
 import 'package:chatbot/data/services/storage/storage_service.dart';
+import 'package:chatbot/presentation/widgets/widgets.dart';
 import 'package:chatbot/utils/utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 part 'auth_state.dart';
 
@@ -17,7 +21,9 @@ class AuthCubit extends Cubit<AuthState> {
 
   AuthRepository _authRepository;
 
-  Future<void> signInWithGoogle() async {
+  Future<void> signInWithGoogle(context) async {
+    WidgetsHelper.showLoadingDialog(context);
+
     emit(
       AuthLoading(
         title: 'Signing you into chatbotname 😎.',
@@ -26,8 +32,10 @@ class AuthCubit extends Cubit<AuthState> {
 
     Response response = await _authRepository.signInWithGoogle();
 
+    Navigator.pop(context);
+
     if (!response.hasError) {
-      _computeSuccessulAuthProcess(response, Strings.googleLogin);
+      await _computeSuccessulAuthProcess(response, Strings.googleLogin);
       emit(
         AuthSuccess(),
       );
@@ -40,7 +48,9 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> signInWithApple() async {
+  Future<void> signInWithApple(context) async {
+    WidgetsHelper.showLoadingDialog(context);
+
     emit(
       AuthLoading(
         title: 'Signing you into chatbotname 😎.',
@@ -49,8 +59,10 @@ class AuthCubit extends Cubit<AuthState> {
 
     Response response = await _authRepository.signInWithApple();
 
+    Navigator.pop(context);
+
     if (!response.hasError) {
-      _computeSuccessulAuthProcess(response, Strings.appleLogin);
+      await _computeSuccessulAuthProcess(response, Strings.appleLogin);
       emit(
         AuthSuccess(),
       );
@@ -63,7 +75,9 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> signInWithFacebook() async {
+  Future<void> signInWithFacebook(context) async {
+    WidgetsHelper.showLoadingDialog(context);
+
     emit(
       AuthLoading(
         title: 'Signing you into chatbotname 😎.',
@@ -72,8 +86,10 @@ class AuthCubit extends Cubit<AuthState> {
 
     Response response = await _authRepository.signInWithFacebook();
 
+    Navigator.pop(context);
+
     if (!response.hasError) {
-      _computeSuccessulAuthProcess(response, Strings.facebookLogin);
+      await _computeSuccessulAuthProcess(response, Strings.facebookLogin);
       emit(
         AuthSuccess(),
       );
@@ -86,7 +102,8 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> _computeSuccessulAuthProcess(Response response, String loginType) async {
+  Future<void> _computeSuccessulAuthProcess(
+      Response response, String loginType) async {
     final responseData = response.data as UserCredential;
     String uid = responseData.user.uid;
 
@@ -110,8 +127,10 @@ class AuthCubit extends Cubit<AuthState> {
       } else {
         models.User user = models.User(
           id: responseData.user.uid,
-          firstName: responseData.user.displayName.split(' ').first ?? responseData.user.displayName,
-          lastName: responseData.user.displayName.split(' ').last ?? responseData.user.displayName,
+          firstName: responseData.user.displayName.split(' ').first ??
+              responseData.user.displayName,
+          lastName: responseData.user.displayName.split(' ').last ??
+              responseData.user.displayName,
           email: responseData.user.email,
           phoneNumber: responseData.user.phoneNumber,
           photoUrl: responseData.user.photoURL,
@@ -128,6 +147,7 @@ class AuthCubit extends Cubit<AuthState> {
             .collection(Strings.usersCollection)
             .doc(user.id)
             .set(user.toFirestore());
+
         _cacheUserAndUserState(user, userState);
       }
     } on Exception catch (e) {

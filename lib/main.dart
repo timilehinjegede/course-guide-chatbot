@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Chatbot',
         theme: LightTheme.appLightTheme,
         home: SplashScreen(),
