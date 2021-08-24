@@ -142,43 +142,44 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _addMessageToFirebase(String message, [bool isUser = true]) async {
-    FirebaseFirestore ff = FirebaseFirestore.instance;
+  Future<void> _addMessageToFirebase(String message,
+      [bool isUser = true]) async {
+    // FirebaseFirestore ff = FirebaseFirestore.instance;
 
-    DocumentSnapshot ds = await ff.collection('messages').doc(user.id).get();
-    String formattedDate =
-        UtilsHelper.formatDateShort(DateTime.now().toString());
-    String timeStamp = Timestamp.fromDate(DateTime.now()).toString();
+    // DocumentSnapshot ds = await ff.collection('messages').doc(user.id).get();
+    // String formattedDate =
+    //     UtilsHelper.formatDateShort(DateTime.now().toString());
+    // String timeStamp = Timestamp.fromDate(DateTime.now()).toString();
 
-    if (ds.data() == null) {
-      await ff.collection('messages').doc(user.id).set(
-        {
-          formattedDate: [
-            ChatModel(
-              isUser: isUser,
-              message: message,
-              timestamp: timeStamp,
-            ).toJson(),
-          ],
-        },
-      );
-    } else {
-      List chatModels = ds.data()[formattedDate];
-      chatModels.add(
-        ChatModel(
-          isUser: isUser,
-          message: message,
-          timestamp: timeStamp,
-        ).toJson(),
-      );
-      await ff.collection('messages').doc(user.id).update(
-        {
-          formattedDate: [
-            ...chatModels,
-          ],
-        },
-      );
-    }
+    // if (ds.data() == null) {
+    //   await ff.collection('messages').doc(user.id).set(
+    //     {
+    //       formattedDate: [
+    //         ChatModel(
+    //           isUser: isUser,
+    //           message: message,
+    //           timestamp: timeStamp,
+    //         ).toJson(),
+    //       ],
+    //     },
+    //   );
+    // } else {
+    //   List chatModels = ds.data()[formattedDate];
+    //   chatModels.add(
+    //     ChatModel(
+    //       isUser: isUser,
+    //       message: message,
+    //       timestamp: timeStamp,
+    //     ).toJson(),
+    //   );
+    //   await ff.collection('messages').doc(user.id).update(
+    //     {
+    //       formattedDate: [
+    //         ...chatModels,
+    //       ],
+    //     },
+    //   );
+    // }
   }
 
   void _sendMessage() async {
@@ -191,7 +192,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _controller.clear();
     setState(() {});
 
-    _addMessageToFirebase(_message);
+    await _addMessageToFirebase(_message);
     DetectIntentResponse data =
         await dialogflow.detectIntent(_message, 'en-US');
     // log('dialog flow response is here $data');
@@ -210,7 +211,7 @@ class _ChatScreenState extends State<ChatScreen> {
           );
         }
       } else {
-        _addMessageToFirebase(fulfillmentText, false);
+        await _addMessageToFirebase(fulfillmentText, false);
         _chatMessages.add(
           ReceivedChatMessage(
             message: fulfillmentText,
@@ -219,8 +220,10 @@ class _ChatScreenState extends State<ChatScreen> {
       }
 
       // here for the grades aftermath
-      if (AgentResponses.getQualifiedCoursesYesResponse
-          .any((response) => response == fulfillmentText)) {
+      // if (AgentResponses.getQualifiedCoursesYesResponse
+      //     .any((response) => response == fulfillmentText)) {
+
+      if (AgentResponses.qualifiedCourseResponse == fulfillmentText) {
         _chatMessages.add(
           ReceivedChatMessage(
             message: 'Please choose your preferred faculty to study in.',
@@ -232,7 +235,7 @@ class _ChatScreenState extends State<ChatScreen> {
         });
         // log('the agent parameters are ${data.queryResult.parameters}');
         // log('the agent parameters json map is ${data.queryResult.parameters.writeToJsonMap()}');
-        // log('the agent parameters json is ${data.queryResult.parameters.writeToJson()}');
+        log('the agent parameters json is ${data.queryResult.parameters.writeToJson()}');
         // log('the agent parameters string is ${data.queryResult.parameters.toString()}');
         // log('the agent parameters fields are ${data.queryResult.parameters.fields}');
 
@@ -247,8 +250,21 @@ class _ChatScreenState extends State<ChatScreen> {
           // log('here grade ${FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]).value.result}');
         }
 
-        _qualifiedCourses =
-            await CoursesService().getQualifiedCourses(fieldParameters);
+        List<FieldParameter> olevelParameters = [];
+        List<FieldParameter> utmeParameters = [];
+
+        for (var param in fieldParameters) {
+          // utme
+          if (param.key.contains('utme')) {
+            utmeParameters.add(param);
+          } else {
+            // o level
+            olevelParameters.add(param);
+          }
+        }
+
+        _qualifiedCourses = await CoursesService()
+            .getQualifiedCourses(utmeParameters, olevelParameters);
         log('qualified courses list is $_qualifiedCourses');
         log('qualified courses length is ${_qualifiedCourses.length}');
       }

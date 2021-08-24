@@ -1,10 +1,12 @@
 class AgentResponses {
   // after the user has provided the nine subjects and their respective grades
   static List<String> getQualifiedCoursesYesResponse = [
-    'Got that, I got the nine subjects and their respective grades.',
+    'Got that, I got the five core subjects you offered in Olevel with their respective grades and the four subjects you offered in UTME.',
     'That\'s right, I\'ve got the nine subjects and their grades.',
     'That\'s it; I\'ve figured out the nine subjects and their grades.',
   ];
+
+  static String qualifiedCourseResponse = 'Got that, I got the five core subjects you offered in Olevel with their respective grades and the four subjects you offered in UTME.';
 }
 
 class FieldParameter {

@@ -14,27 +14,40 @@ class Course {
     this.name,
     this.universities,
     this.utmeRequirements,
+    this.olevelRequirements,
   });
 
   String faculty;
   String name;
   Universities universities;
   List<UtmeRequirement> utmeRequirements;
+  List<OlevelRequirements> olevelRequirements;
 
   factory Course.fromJson(Map<String, dynamic> json) => Course(
         faculty: json["faculty"],
         name: json["name"],
         universities: Universities.fromJson(json["universities"]),
         utmeRequirements: List<UtmeRequirement>.from(
-            json["utme_requirements"].map((x) => UtmeRequirement.fromJson(x))),
+          json["utme_requirements"].map(
+            (x) => UtmeRequirement.fromJson(x),
+          ),
+        ),
+        olevelRequirements: List<OlevelRequirements>.from(
+          json["olevel_requirements"].map(
+            (x) => OlevelRequirements.fromJson(x),
+          ),
+        ),
       );
 
   Map<String, dynamic> toJson() => {
         "faculty": faculty,
         "name": name,
         "universities": universities.toJson(),
-        "utme_requirements":
-            List<dynamic>.from(utmeRequirements.map((x) => x.toJson())),
+        "utme_requirements": List<dynamic>.from(
+          utmeRequirements.map(
+            (x) => x.toJson(),
+          ),
+        ),
       };
 }
 
@@ -73,6 +86,27 @@ class UtmeRequirement {
 
   factory UtmeRequirement.fromJson(Map<String, dynamic> json) =>
       UtmeRequirement(
+        isRequired: json["is_required"],
+        subjectName: json["subject_name"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "is_required": isRequired,
+        "subject_name": subjectName,
+      };
+}
+
+class OlevelRequirements {
+  OlevelRequirements({
+    this.isRequired,
+    this.subjectName,
+  });
+
+  bool isRequired;
+  String subjectName;
+
+  factory OlevelRequirements.fromJson(Map<String, dynamic> json) =>
+      OlevelRequirements(
         isRequired: json["is_required"],
         subjectName: json["subject_name"],
       );

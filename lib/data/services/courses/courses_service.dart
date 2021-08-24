@@ -9,11 +9,15 @@ class CoursesService {
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
 
   Future<List<Course>> getQualifiedCourses(
-      List<FieldParameter> fieldParameters) async {
+      List<FieldParameter> utmeFieldParameters,
+      List<FieldParameter> olevelFieldParameters) async {
+    List<Course> qualifiedOlevelCourses = [];
     List<Course> qualifiedCourses = [];
     List<Course> coursesFromFirebase = [];
-    int requiredCount = 0;
-    int otherCount = 0;
+    int requiredOlevelCount = 0;
+    int requiredUtmeCount = 0;
+    int otherOlevelCount = 0;
+    int otherUtmeCount = 0;
 
     try {
       DocumentSnapshot documentSnapshot =
@@ -25,79 +29,84 @@ class CoursesService {
           coursesFromFirebase.add(Course.fromJson(department));
         }
         List<SubjectAndGrade> subjectsOffered =
-            getCourseAndGradeFromFieldParamaters(fieldParameters);
+            getCourseAndGradeFromFieldParamaters(olevelFieldParameters);
 
+        // FILTER FOR OLEVEL COURSES
         for (Course course in coursesFromFirebase) {
-          requiredCount = 0;
-          otherCount = 0;
-          
-          List<UtmeRequirement> requiredRequirements = course.utmeRequirements
+          requiredOlevelCount = 0;
+          otherOlevelCount = 0;
+
+          List<OlevelRequirements> requiredOlevelRequirements = course
+              .olevelRequirements
               .where((element) => element.isRequired == true)
               .toList();
-          List<UtmeRequirement> otherRequirements = course.utmeRequirements
+          List<OlevelRequirements> otherOlevelRequirements = course
+              .olevelRequirements
               .where((element) => element.isRequired == false)
               .toList();
 
-          log('course name is ${course.name} requirement required ${requiredRequirements.length} others ${otherRequirements.length}');
+          log('course name is ${course.name} requirement required ${requiredOlevelRequirements.length} others ${otherOlevelRequirements.length} for o level');
 
           // since the required courses are always 5
           // if required requirmeent is 5
-          if (requiredRequirements.length == 5) {
-            for (UtmeRequirement utmeRequirement in requiredRequirements) {
+          if (requiredOlevelRequirements.length == 5) {
+            for (OlevelRequirements olevelRequirement
+                in requiredOlevelRequirements) {
               if (subjectsOffered.any((subject) =>
-                  subject.subject == utmeRequirement.subjectName &&
+                  subject.subject == olevelRequirement.subjectName &&
                   isSubjectGradeQualified(subject.grade))) {
-                requiredCount = requiredCount + 1;
-                log('found it!!! for required for course ${course.name}');
+                requiredOlevelCount = requiredOlevelCount + 1;
+                log('found it!!! for required for course ${course.name} o level requirement');
               } else {
                 break;
               }
             }
-            log('required count is $requiredCount');
-            if (requiredCount == 5) {
-              qualifiedCourses.add(course);
-              log('course added is ${course.name}');
+            log('required count is $requiredOlevelCount o level req');
+            if (requiredOlevelCount == 5) {
+              qualifiedOlevelCourses.add(course);
+              log('course added is ${course.name} o level req');
             }
           } else {
             // check for required requirements
-            for (UtmeRequirement utmeRequirement in requiredRequirements) {
+            for (OlevelRequirements olevelRequirement
+                in requiredOlevelRequirements) {
               if (subjectsOffered.any((subject) =>
-                  subject.subject == utmeRequirement.subjectName &&
+                  subject.subject == olevelRequirement.subjectName &&
                   isSubjectGradeQualified(subject.grade))) {
-                requiredCount = requiredCount + 1;
-                log('found it!!! for required for course ${course.name}');
+                requiredOlevelCount = requiredOlevelCount + 1;
+                log('found it!!! for required for course ${course.name} o level req');
               } else {
                 break;
               }
             }
 
-            log('required count is $requiredCount');
+            log('required count is $requiredOlevelCount o level req');
 
             // check for other requirements
-            int requiredRequirementsNo = requiredRequirements.length;
+            int requiredRequirementsNo = requiredOlevelRequirements.length;
             int otherRequirementsNo = 5 - requiredRequirementsNo;
 
-            log('others tooo check is $otherRequirementsNo');
+            log('others tooo check is $otherRequirementsNo o level req');
 
             if (otherRequirementsNo != 0) {
               for (int i = 0; i < otherRequirementsNo; i++) {
                 if (subjectsOffered.any((subject) =>
-                    subject.subject == otherRequirements[i].subjectName &&
+                    subject.subject == otherOlevelRequirements[i].subjectName &&
                     isSubjectGradeQualified(subject.grade))) {
-                  log('found it!!! for others  for course ${course.name}');
-                  otherCount = otherCount + 1;
+                  log('found it!!! for others  for course ${course.name} o level req');
+                  otherOlevelCount = otherOlevelCount + 1;
                 } else {
                   break;
                 }
               }
             }
 
-            log('others count is $otherCount');
+            log('others count is $otherOlevelCount o level req');
 
-            if (requiredCount == requiredRequirementsNo &&
-                otherCount == otherRequirementsNo) {
-              qualifiedCourses.add(course);
-              log('course added is ${course.name}');
+            if (requiredOlevelCount == requiredRequirementsNo &&
+                otherOlevelCount == otherRequirementsNo) {
+              qualifiedOlevelCourses.add(course);
+              log('course added is ${course.name} o level req');
             }
           }
 
@@ -114,11 +123,93 @@ class CoursesService {
       } else {
         return [];
       }
+
+      // FILTER UTME subjects
+      for (Course c in qualifiedOlevelCourses) {
+        requiredUtmeCount = 0;
+        otherUtmeCount = 0;
+
+        // UTME subjects
+        List<String> utmeSubjectsOffered =
+            getUTMESubjectsFromFieldParameters(utmeFieldParameters);
+
+        log('======= UTME subjects offered are $utmeSubjectsOffered');
+
+        List<UtmeRequirement> requiredUtmeRequirements = c.utmeRequirements
+            .where((element) => element.isRequired == true)
+            .toList();
+        List<UtmeRequirement> otherUtmeRequirements = c.utmeRequirements
+            .where((element) => element.isRequired == false)
+            .toList();
+
+          log('course name is ${c.name} requirement required ${requiredUtmeRequirements.length} others ${otherUtmeRequirements.length} for o level');
+
+        // deeling with this qualifiedCourses
+        if (requiredUtmeRequirements.length == 4) {
+          for (UtmeRequirement utmeRequirement in requiredUtmeRequirements) {
+            if (utmeSubjectsOffered
+                .any((subject) => subject == utmeRequirement.subjectName)) {
+              requiredUtmeCount = requiredUtmeCount + 1;
+              log('found it!!! for required for course ${c.name} utme req');
+            } else {
+              break;
+            }
+          }
+          log('required count is $requiredUtmeCount utme req');
+          if (requiredUtmeCount == 4) {
+            qualifiedCourses.add(c);
+            log('course added is ${c.name} utme req');
+          }
+        } else {
+          for (UtmeRequirement utmeRequirement in requiredUtmeRequirements) {
+            if (utmeSubjectsOffered
+                .any((subject) => subject == utmeRequirement.subjectName)) {
+              requiredUtmeCount = requiredUtmeCount + 1;
+              log('found it!!! for required for course ${c.name} utme req');
+            } 
+            else {
+              break;
+            }
+          }
+
+          log('required count is $requiredUtmeCount utme req');
+
+          // check for other requirements
+          int requiredRequirementsNo = requiredUtmeRequirements.length;
+          int otherRequirementsNo = 4 - requiredRequirementsNo;
+
+          log('others tooo check is $otherRequirementsNo utme req');
+
+          if (otherRequirementsNo != 0) {
+            for (int i = 0; i < otherRequirementsNo; i++) {
+              if (utmeSubjectsOffered.any((subject) =>
+                  subject == otherUtmeRequirements[i].subjectName)) {
+                log('found it!!! for others  for course ${c.name} utme req');
+                otherUtmeCount = otherUtmeCount + 1;
+              } else {
+                break;
+              }
+            }
+          }
+
+          log('others count is $otherOlevelCount utme req');
+
+          if (requiredUtmeCount == requiredRequirementsNo &&
+              otherUtmeCount == otherRequirementsNo) {
+            qualifiedCourses.add(c);
+            log('course added is ${c.name} utme req');
+          }
+        }
+
+        // continue your thing
+      }
     } catch (e) {
       log('e is ${e.toString()}');
     }
     return qualifiedCourses;
   }
+
+  furtherFilterCoursesBasedOnUTME() {}
 
   bool isSubjectGradeQualified(String subjectGrade) {
     if (subjectGrade == 'A1' ||
@@ -131,6 +222,21 @@ class CoursesService {
     } else {
       return false;
     }
+  }
+
+  List<String> getUTMESubjectsFromFieldParameters(
+      List<FieldParameter> fieldParameters) {
+    List<String> subjects = [];
+
+    for (FieldParameter fp in fieldParameters) {
+      if (fp.key.contains('utme')) {
+        subjects.add(
+          fp.value.result,
+        );
+      }
+    }
+
+    return subjects;
   }
 
   List<SubjectAndGrade> getCourseAndGradeFromFieldParamaters(
