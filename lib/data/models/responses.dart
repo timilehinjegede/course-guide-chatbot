@@ -6,7 +6,7 @@ class AgentResponses {
     'That\'s it; I\'ve figured out the nine subjects and their grades.',
   ];
 
-  static String qualifiedCourseResponse = 'Got that, I got the five core subjects you offered in Olevel with their respective grades and the four subjects you offered in UTME.';
+  static String qualifiedCourseResponse = 'Got that, I got the five core subjects you offered in O\'level with their respective grades and the four subjects you offered in UTME.';
 }
 
 class FieldParameter {

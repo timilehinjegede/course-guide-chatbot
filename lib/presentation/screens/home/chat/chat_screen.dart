@@ -217,57 +217,58 @@ class _ChatScreenState extends State<ChatScreen> {
             message: fulfillmentText,
           ),
         );
+
+        if (AgentResponses.qualifiedCourseResponse == fulfillmentText) {
+          _chatMessages.add(
+            ReceivedChatMessage(
+              message: 'Please choose your preferred faculty to study in.',
+            ),
+          );
+
+          // log('the agent parameters are ${data.queryResult.parameters}');
+          // log('the agent parameters json map is ${data.queryResult.parameters.writeToJsonMap()}');
+          log('the agent parameters json is ${data.queryResult.parameters.writeToJson()}');
+          // log('the agent parameters string is ${data.queryResult.parameters.toString()}');
+          // log('the agent parameters fields are ${data.queryResult.parameters.fields}');
+
+          Map resultFromGradesAndSubjects =
+              jsonDecode(data.queryResult.parameters.writeToJson());
+          List<FieldParameter> fieldParameters = [];
+
+          for (int i = 0; i < resultFromGradesAndSubjects['1'].length; i++) {
+            fieldParameters.add(
+                FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]));
+            // log('here subject ${FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]).key}');
+            // log('here grade ${FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]).value.result}');
+          }
+
+          List<FieldParameter> olevelParameters = [];
+          List<FieldParameter> utmeParameters = [];
+
+          for (var param in fieldParameters) {
+            // utme
+            if (param.key.contains('utme')) {
+              utmeParameters.add(param);
+            } else {
+              // o level
+              olevelParameters.add(param);
+            }
+          }
+
+          _qualifiedCourses = await CoursesService()
+              .getQualifiedCourses(utmeParameters, olevelParameters);
+          log('qualified courses list is $_qualifiedCourses');
+          log('qualified courses length is ${_qualifiedCourses.length}');
+
+          setState(() {
+            _showFilters = true;
+          });
+        }
       }
 
       // here for the grades aftermath
       // if (AgentResponses.getQualifiedCoursesYesResponse
       //     .any((response) => response == fulfillmentText)) {
-
-      if (AgentResponses.qualifiedCourseResponse == fulfillmentText) {
-        _chatMessages.add(
-          ReceivedChatMessage(
-            message: 'Please choose your preferred faculty to study in.',
-          ),
-        );
-
-        setState(() {
-          _showFilters = true;
-        });
-        // log('the agent parameters are ${data.queryResult.parameters}');
-        // log('the agent parameters json map is ${data.queryResult.parameters.writeToJsonMap()}');
-        log('the agent parameters json is ${data.queryResult.parameters.writeToJson()}');
-        // log('the agent parameters string is ${data.queryResult.parameters.toString()}');
-        // log('the agent parameters fields are ${data.queryResult.parameters.fields}');
-
-        Map resultFromGradesAndSubjects =
-            jsonDecode(data.queryResult.parameters.writeToJson());
-        List<FieldParameter> fieldParameters = [];
-
-        for (int i = 0; i < resultFromGradesAndSubjects['1'].length; i++) {
-          fieldParameters.add(
-              FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]));
-          // log('here subject ${FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]).key}');
-          // log('here grade ${FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]).value.result}');
-        }
-
-        List<FieldParameter> olevelParameters = [];
-        List<FieldParameter> utmeParameters = [];
-
-        for (var param in fieldParameters) {
-          // utme
-          if (param.key.contains('utme')) {
-            utmeParameters.add(param);
-          } else {
-            // o level
-            olevelParameters.add(param);
-          }
-        }
-
-        _qualifiedCourses = await CoursesService()
-            .getQualifiedCourses(utmeParameters, olevelParameters);
-        log('qualified courses list is $_qualifiedCourses');
-        log('qualified courses length is ${_qualifiedCourses.length}');
-      }
     }
 
     _message = '';

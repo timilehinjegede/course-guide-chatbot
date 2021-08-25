@@ -52,18 +52,18 @@ class SettingsScreen extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
               children: [
-                _ItemEntry(
-                  label: 'Explore Institutions',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ExploreInstitutionsScreen(),
-                      ),
-                    );
-                  },
-                ),
-                Divider(),
+                // _ItemEntry(
+                //   label: 'Explore Institutions',
+                //   onTap: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (_) => ExploreInstitutionsScreen(),
+                //       ),
+                //     );
+                //   },
+                // ),
+                // Divider(),
                 _ItemEntry(
                   label: 'Rate App',
                   onTap: () {},
