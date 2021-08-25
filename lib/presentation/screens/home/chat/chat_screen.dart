@@ -13,6 +13,7 @@ import 'package:chatbot/presentation/screens/home/chat/start_using_chatbot.dart'
 import 'package:chatbot/presentation/widgets/course_card.dart';
 import 'package:chatbot/presentation/widgets/fancy_loader.dart';
 import 'package:chatbot/presentation/widgets/filter_card.dart';
+import 'package:chatbot/presentation/widgets/typing_indicator.dart';
 import 'package:chatbot/presentation/widgets/widgets.dart';
 import 'package:chatbot/utils/utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -41,6 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isRecording = false;
   bool _showFilters = false;
   bool _hasStartedConvoWithBot;
+  bool _isBotReplying = false;
 
   RecorderStream _recorder = RecorderStream();
   StreamSubscription _recorderStatus;
@@ -49,6 +51,8 @@ class _ChatScreenState extends State<ChatScreen> {
   List<Course> _qualifiedCourses = [];
   List<ChatModel> _chatsFromFirebase = [];
 
+  List<FieldParameter> olevelParameters = [];
+  List<FieldParameter> utmeParameters = [];
   // TODO DialogflowGrpc class instance
   DialogflowGrpcV2Beta1 dialogflow;
 
@@ -144,45 +148,48 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _addMessageToFirebase(String message,
       [bool isUser = true]) async {
-    // FirebaseFirestore ff = FirebaseFirestore.instance;
+    FirebaseFirestore ff = FirebaseFirestore.instance;
 
-    // DocumentSnapshot ds = await ff.collection('messages').doc(user.id).get();
-    // String formattedDate =
-    //     UtilsHelper.formatDateShort(DateTime.now().toString());
-    // String timeStamp = Timestamp.fromDate(DateTime.now()).toString();
+    DocumentSnapshot ds = await ff.collection('messages').doc(user.id).get();
+    String formattedDate =
+        UtilsHelper.formatDateShort(DateTime.now().toString());
+    String timeStamp = Timestamp.fromDate(DateTime.now()).toString();
 
-    // if (ds.data() == null) {
-    //   await ff.collection('messages').doc(user.id).set(
-    //     {
-    //       formattedDate: [
-    //         ChatModel(
-    //           isUser: isUser,
-    //           message: message,
-    //           timestamp: timeStamp,
-    //         ).toJson(),
-    //       ],
-    //     },
-    //   );
-    // } else {
-    //   List chatModels = ds.data()[formattedDate];
-    //   chatModels.add(
-    //     ChatModel(
-    //       isUser: isUser,
-    //       message: message,
-    //       timestamp: timeStamp,
-    //     ).toJson(),
-    //   );
-    //   await ff.collection('messages').doc(user.id).update(
-    //     {
-    //       formattedDate: [
-    //         ...chatModels,
-    //       ],
-    //     },
-    //   );
-    // }
+    if (ds.data() == null) {
+      await ff.collection('messages').doc(user.id).set(
+        {
+          formattedDate: [
+            ChatModel(
+              isUser: isUser,
+              message: message,
+              timestamp: timeStamp,
+            ).toJson(),
+          ],
+        },
+      );
+    } else {
+      List chatModels = ds.data()[formattedDate];
+      chatModels.add(
+        ChatModel(
+          isUser: isUser,
+          message: message,
+          timestamp: timeStamp,
+        ).toJson(),
+      );
+      await ff.collection('messages').doc(user.id).update(
+        {
+          formattedDate: [
+            ...chatModels,
+          ],
+        },
+      );
+    }
   }
 
   void _sendMessage() async {
+    setState(() {
+      _isBotReplying = true;
+    });
     _message.trim();
     _chatMessages.add(
       SentChatMessage(
@@ -242,9 +249,6 @@ class _ChatScreenState extends State<ChatScreen> {
             // log('here grade ${FieldParameter.fromJson(resultFromGradesAndSubjects['1'][i]).value.result}');
           }
 
-          List<FieldParameter> olevelParameters = [];
-          List<FieldParameter> utmeParameters = [];
-
           for (var param in fieldParameters) {
             // utme
             if (param.key.contains('utme')) {
@@ -254,11 +258,6 @@ class _ChatScreenState extends State<ChatScreen> {
               olevelParameters.add(param);
             }
           }
-
-          _qualifiedCourses = await CoursesService()
-              .getQualifiedCourses(utmeParameters, olevelParameters);
-          log('qualified courses list is $_qualifiedCourses');
-          log('qualified courses length is ${_qualifiedCourses.length}');
 
           setState(() {
             _showFilters = true;
@@ -272,7 +271,9 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     _message = '';
-    setState(() {});
+    setState(() {
+      _isBotReplying = false;
+    });
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -367,6 +368,10 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _enableSendButton() => _message.trim().isNotEmpty && _message != null;
 
   void _filterResults(String label) async {
+    setState(() {
+      _showFilters = false;
+      _isBotReplying = true;
+    });
     _chatMessages.add(
       SentChatMessage(
         message: label,
@@ -378,9 +383,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
     log('qualified courses are ${_qualifiedCourses.length}');
 
-    setState(() {
-      _showFilters = false;
-    });
     String firstMessage =
         'You choose the $label Faculty, Showing available courses in the faulty based on your subjects combinations and grades.';
 
@@ -390,6 +392,12 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
     await _addMessageToFirebase(firstMessage, false);
+    _qualifiedCourses = await CoursesService()
+        .getQualifiedCourses(label, utmeParameters, olevelParameters);
+    log('qualified courses list is $_qualifiedCourses');
+    log('qualified courses length is ${_qualifiedCourses.length}');
+    utmeParameters = [];
+    olevelParameters = [];
     if (_qualifiedCourses.isEmpty) {
       String secondMessage =
           'There are no available courses you can study in the $label faculty based on your subject combinations and grades.';
@@ -426,6 +434,9 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
     }
+    setState(() {
+      _isBotReplying = false;
+    });
   }
 
   @override
@@ -496,6 +507,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                   ),
+                  if (_isBotReplying)
+                    Container(
+                      color: lightColors.background,
+                      child: TypingIndicator(
+                        showIndicator: _isBotReplying,
+                      ),
+                    ),
                   if (_showFilters)
                     Container(
                       height: 20,
@@ -529,6 +547,13 @@ class _ChatScreenState extends State<ChatScreen> {
                             label: 'ARTS',
                             onTap: () {
                               _filterResults('Arts');
+                            },
+                          ),
+                          SizedBox(width: 20),
+                          FilterCard(
+                            label: 'MEDICAL SCIENCES',
+                            onTap: () {
+                              _filterResults('Medical Sciences');
                             },
                           ),
                         ],

@@ -9,8 +9,10 @@ class CoursesService {
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
 
   Future<List<Course>> getQualifiedCourses(
-      List<FieldParameter> utmeFieldParameters,
-      List<FieldParameter> olevelFieldParameters) async {
+    String faculty,
+    List<FieldParameter> utmeFieldParameters,
+    List<FieldParameter> olevelFieldParameters,
+  ) async {
     List<Course> qualifiedOlevelCourses = [];
     List<Course> qualifiedCourses = [];
     List<Course> coursesFromFirebase = [];
@@ -19,9 +21,13 @@ class CoursesService {
     int otherOlevelCount = 0;
     int otherUtmeCount = 0;
 
+    // format label
+    String formattedFaculty = faculty.replaceAll(' ', '_').toLowerCase();
+    log('faculty name is $formattedFaculty');
+
     try {
       DocumentSnapshot documentSnapshot =
-          await firebaseFirestore.collection('courses').doc('sciences').get();
+          await firebaseFirestore.collection('courses').doc(formattedFaculty).get();
 
       if (documentSnapshot.exists) {
         Map course = documentSnapshot.data();
@@ -142,7 +148,7 @@ class CoursesService {
             .where((element) => element.isRequired == false)
             .toList();
 
-          log('course name is ${c.name} requirement required ${requiredUtmeRequirements.length} others ${otherUtmeRequirements.length} for o level');
+        log('course name is ${c.name} requirement required ${requiredUtmeRequirements.length} others ${otherUtmeRequirements.length} for o level');
 
         // deeling with this qualifiedCourses
         if (requiredUtmeRequirements.length == 4) {
@@ -166,8 +172,7 @@ class CoursesService {
                 .any((subject) => subject == utmeRequirement.subjectName)) {
               requiredUtmeCount = requiredUtmeCount + 1;
               log('found it!!! for required for course ${c.name} utme req');
-            } 
-            else {
+            } else {
               break;
             }
           }
