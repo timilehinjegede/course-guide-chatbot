@@ -1,9 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.chatbot">
+    package="com.timilehinjegede.chatbot">
    <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="Apollo"
-        android:icon="@mipmap/ic_launcher">
+        android:label="JAMB Course Finder"
+        android:icon="@mipmap/launcher_icon">
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"

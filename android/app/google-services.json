@@ -1,48 +1,56 @@
 {
   "project_info": {
-    "project_number": "260157359450",
-    "project_id": "final-year-project-demo",
-    "storage_bucket": "final-year-project-demo.appspot.com"
+    "project_number": "511122720929",
+    "project_id": "course-guide-chatbot-7fd6c",
+    "storage_bucket": "course-guide-chatbot-7fd6c.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:260157359450:android:9b66f9c7f3eaecb8925f63",
+        "mobilesdk_app_id": "1:511122720929:android:e1d305dfec3fb36d2888e0",
         "android_client_info": {
-          "package_name": "com.example.chatbot"
+          "package_name": "com.timilehinjegede.chatbot"
         }
       },
       "oauth_client": [
         {
-          "client_id": "260157359450-48b4qntmdt1s82apjnapjp232s608l4f.apps.googleusercontent.com",
+          "client_id": "511122720929-p8rllgr5edjjajc7f3dti09d1htahrhn.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.chatbot",
+            "package_name": "com.timilehinjegede.chatbot",
+            "certificate_hash": "625635bc827c1de3f6b7670fb2d0dd1e115d45eb"
+          }
+        },
+        {
+          "client_id": "511122720929-shu2a4qbijn0vagm66rham1m8fl2066s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.timilehinjegede.chatbot",
             "certificate_hash": "310006e2fbed198a9d3cfa39a81403036992af0d"
           }
         },
         {
-          "client_id": "260157359450-pjrbee8v55nmp771m0ojuiq6i8ggokdm.apps.googleusercontent.com",
+          "client_id": "511122720929-g6j9rk3sttad9ju08e4u8dikmnro41nl.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyC9-KcwmI1sP7Rk4CAS_6eEP4ZbsfFHiFE"
+          "current_key": "AIzaSyDZYoCQBheS2AuZhThTxd_jLUqDshOBvlc"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "260157359450-pjrbee8v55nmp771m0ojuiq6i8ggokdm.apps.googleusercontent.com",
+              "client_id": "511122720929-g6j9rk3sttad9ju08e4u8dikmnro41nl.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "260157359450-3e126ibbn5l414t09pgd11ek33rrejes.apps.googleusercontent.com",
+              "client_id": "511122720929-0k8l1ujllnc2akvp0nhj57bvailrjgla.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.chatbot"
+                "bundle_id": "com.timilehinjegede.chatbot"
               }
             }
           ]

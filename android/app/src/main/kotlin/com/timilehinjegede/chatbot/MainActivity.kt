@@ -1,4 +1,4 @@
-package com.example.chatbot
+package com.timilehinjegede.chatbot
 
 import io.flutter.embedding.android.FlutterActivity
 

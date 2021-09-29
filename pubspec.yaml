@@ -3,7 +3,7 @@ description: A new Flutter project.
 
 publish_to: 'none' 
 
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -24,10 +24,10 @@ dependencies:
   bloc_test: ^8.0.0
   equatable: ^2.0.0
   sign_in_with_apple: ^3.0.0
-  hive: ^1.4.1+1
-  hive_flutter: ^0.3.0+2
-  path_provider: ^1.0.0
-  flutter_svg: ^0.19.3
+  hive: 
+  hive_flutter: 
+  path_provider: 
+  flutter_svg: any
   intl: ^0.17.0
 
   # stream audio data from mic
@@ -40,8 +40,14 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^1.10.0
-  hive_generator: ^0.8.0
+  build_runner: 
+  hive_generator: 
+  flutter_launcher_icons:
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/app_icon.png"
 
 flutter:
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">Demo Chatbot</string>
-  <string name="facebook_app_id">473576167179724</string>
-  <string name="fb_login_protocol_scheme">fb473576167179724</string>
+  <string name="app_name">Course Guide Chatbot</string>
+  <string name="facebook_app_id">594678021660348</string>
+  <string name="fb_login_protocol_scheme">fb594678021660348</string>
 </resources>

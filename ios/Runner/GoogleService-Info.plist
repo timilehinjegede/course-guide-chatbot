@@ -3,21 +3,23 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>260157359450-3e126ibbn5l414t09pgd11ek33rrejes.apps.googleusercontent.com</string>
+	<string>511122720929-0k8l1ujllnc2akvp0nhj57bvailrjgla.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.260157359450-3e126ibbn5l414t09pgd11ek33rrejes</string>
+	<string>com.googleusercontent.apps.511122720929-0k8l1ujllnc2akvp0nhj57bvailrjgla</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>511122720929-p8rllgr5edjjajc7f3dti09d1htahrhn.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBwzsG2_oKEpjJG8xh8CgTDbc03ZETKIOU</string>
+	<string>AIzaSyB7feythcBCSw8125jGjf7OWUIAm3j9k78</string>
 	<key>GCM_SENDER_ID</key>
-	<string>260157359450</string>
+	<string>511122720929</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.chatbot</string>
+	<string>com.timilehinjegede.chatbot</string>
 	<key>PROJECT_ID</key>
-	<string>final-year-project-demo</string>
+	<string>course-guide-chatbot-7fd6c</string>
 	<key>STORAGE_BUCKET</key>
-	<string>final-year-project-demo.appspot.com</string>
+	<string>course-guide-chatbot-7fd6c.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:260157359450:ios:f3d72c3698087094925f63</string>
+	<string>1:511122720929:ios:3ba590ad978d24aa2888e0</string>
 </dict>
 </plist>
