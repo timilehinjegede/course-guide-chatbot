@@ -63,8 +63,10 @@ class CourseCard extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  course.name.split(' ').first[0] +
-                      course.name.split(' ').last[0],
+                  course.name.split(' ').length == 1
+                      ? course.name[0]
+                      : course.name.split(' ').first[0] +
+                          course.name.split(' ').last[0],
                   style: TextStyle(
                     fontSize: 35,
                     fontWeight: FontWeight.w600,

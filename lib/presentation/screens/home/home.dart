@@ -49,6 +49,7 @@ class _HomeState extends State<Home> {
       backgroundColor: lightColors.primary,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
+        selectedItemColor: lightColors.primary,
         onTap: (newIndex) async {
           setState(() {
             _currentIndex = newIndex;

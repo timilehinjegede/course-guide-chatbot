@@ -68,20 +68,6 @@ class _ChatScreenState extends State<ChatScreen> {
     initPlugin();
 
     _controller = TextEditingController();
-    // _chatMessages.addAll(
-    //   [
-    //     // SentChatMessage(message: "Hey"),
-    //     // ReceivedChatMessage(message: "Hi"),
-    //     // ReceivedChatMessage(message: "How are you?"),
-    //     // SentChatMessage(message: "I am great how are you doing?"),
-    //     // ReceivedChatMessage(message: "I am okay"),
-    //     // SentChatMessage(message: "Can we meet tomorrow?"),
-    //     // ReceivedChatMessage(message: "I will think about it"),
-    //     // SentChatMessage(message: "Lmao. Okay o."),
-    //     // ReceivedChatMessage(message: "I will think about it"),
-    //     // SentChatMessage(message: "Lmao. Okay o."),
-    //   ],
-    // );
   }
 
   Future<void> _getUserMessages() async {
@@ -168,7 +154,7 @@ class _ChatScreenState extends State<ChatScreen> {
         },
       );
     } else {
-      List chatModels = ds.data()[formattedDate];
+      List chatModels = ds.data()[formattedDate] ?? [];
       chatModels.add(
         ChatModel(
           isUser: isUser,
@@ -264,10 +250,6 @@ class _ChatScreenState extends State<ChatScreen> {
           });
         }
       }
-
-      // here for the grades aftermath
-      // if (AgentResponses.getQualifiedCoursesYesResponse
-      //     .any((response) => response == fulfillmentText)) {
     }
 
     _message = '';
@@ -287,7 +269,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
     await Future.wait([_recorder.initialize()]);
 
-    // TODO Get a Service account
     // Get a Service account
     final serviceAccount = ServiceAccount.fromString(
       '${(await rootBundle.loadString('assets/jsons/final-project-chatbot-51194fc7f621.json'))}',
@@ -307,7 +288,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _audioStream = BehaviorSubject<List<int>>();
     _audioStreamSubscription = _recorder.audioStream.listen((data) {
-      // print('$data');
       _audioStream.add(data);
     });
 
@@ -319,7 +299,6 @@ class _ChatScreenState extends State<ChatScreen> {
       'HIPAA'
     ], boost: 20.0);
 
-    // Create an audio InputConfig
     // See: https://cloud.google.com/dialogflow/es/docs/reference/rpc/google.cloud.dialogflow.v2#google.cloud.dialogflow.v2.InputAudioConfig
     var config = InputConfigV2beta1(
         encoding: 'AUDIO_ENCODING_LINEAR_16',
@@ -328,13 +307,10 @@ class _ChatScreenState extends State<ChatScreen> {
         singleUtterance: false,
         speechContexts: [biasList]);
 
-    // TODO Make the streamingDetectIntent call, with the InputConfig and the audioStream
     final responseStream =
         dialogflow.streamingDetectIntent(config, _audioStream);
 
-    // TODO Get the transcript and detectedIntent and show on screen
     responseStream.listen((data) {
-      //print('----');
       setState(() {
         //print(data);
         String transcript = data.recognitionResult.transcript;
@@ -378,10 +354,10 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
     await _addMessageToFirebase(label);
-    _qualifiedCourses =
-        _qualifiedCourses.where((course) => course.faculty == label).toList();
+    // _qualifiedCourses =
+    //     _qualifiedCourses.where((course) => course.faculty == label).toList();
 
-    log('qualified courses are ${_qualifiedCourses.length}');
+    // log('qualified courses are ${_qualifiedCourses.length}');
 
     String firstMessage =
         'You choose the $label Faculty, Showing available courses in the faulty based on your subjects combinations and grades.';

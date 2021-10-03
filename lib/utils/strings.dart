@@ -32,8 +32,11 @@ class Strings {
   static const String defaultErrorMessage = 'Ooops! Something went wrong 😔.';
 
   // firebase keys
-  static const String usersCollection =
-      kDebugMode ? 'users_dev' : 'users_production';
+  static const String usersCollection = 'users';
+
+  // static const String usersCollection =
+  //     kDebugMode ? 'users_dev' : 'users_production';
+      
 
   // hive keys
   static const String userBox = 'user';
